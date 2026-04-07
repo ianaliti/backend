@@ -50,3 +50,19 @@ GET
 http://localhost:3000/api/restaurants/me with token restaurant
 
 PATCH http://localhost:3000/api/restaurants/me with token restaurant and with the token other user 
+
+login as a restarant
+POST /api/dishes with resto token
+
+GET /api/restaurants/<restaurantId>/dishes
+http://localhost:3000/api/restaurants/1a1bc24f-738c-42a6-be04-18f9f079d86f/dishes
+
+GET
+http://localhost:3000/api/dishes/50723968-78e7-496d-88f3-b78b19cf43a4 <dishId>
+
+PATCH
+http://localhost:3000/api/dishes/50723968-78e7-496d-88f3-b78b19cf43a4
+{
+  "price": 13.9,
+  "isAvailable": true
+}
