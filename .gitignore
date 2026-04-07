@@ -3,5 +3,5 @@ node_modules
 
 /generated/prisma
 dist
-.env.keys
+.env*
 docker-compose.yml

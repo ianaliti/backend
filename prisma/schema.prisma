@@ -19,10 +19,117 @@ enum Role {
   RESTAURANT
 }
 
+enum OrderStatus { 
+    PENDING
+    CONFIRMED
+    SHIPPED 
+    DELIVERED 
+  }
+
 model User {
   id           String    @id @default(uuid())
   email        String    @unique
+  name         String
   password     String
   createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
   role         Role      @default(USER)
+
+  orders   Order[]
+  ratings  Rating[]
+}
+
+model Admin {
+  id           String    @id @default(uuid())
+  email        String    @unique
+  name         String
+  password     String
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+  role         Role      @default(ADMIN)
+}
+
+model Restaurant {
+  id                  String    @id @default(uuid())
+  password            String
+  name                String
+  description         String?   @db.Text
+  address             String
+  city                String
+  codePostal          String
+  email               String    @unique
+  phone               String
+  website             String?
+  image               String?
+  cuisine             String
+  rating              Float     @default(0)
+  priceRange          String?
+  openingHours        String?
+  minimumOrder        Float     @default(0)
+  isDeliveryAvailable Boolean   @default(true)
+  isActive            Boolean   @default(true)
+  averageRating       Float     @default(0)
+  createdAt           DateTime  @default(now())
+  updatedAt           DateTime  @updatedAt
+  role                Role      @default(RESTAURANT)
+
+  plats   Plat[]
+  orders  Order[]
+  ratings Rating[]
+}
+
+model Plat {
+  id           String   @id @default(uuid())
+  restaurantId String
+  name         String
+  description  String?  @db.Text
+  price        Float
+  image        String?
+  category     String
+  isAvailable  Boolean  @default(true)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  restaurant Restaurant @relation(fields: [restaurantId], references: [id])
+  orderItems OrderItem[]
+}
+
+model Rating {
+  id           String   @id @default(uuid())
+  userId       String
+  restaurantId String
+  score        Int
+  comment      String?  @db.Text
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  user       User       @relation(fields: [userId], references: [id])
+  restaurant Restaurant @relation(fields: [restaurantId], references: [id])
+}
+
+model Order {
+  id              String      @id @default(uuid())
+  userId          String
+  restaurantId    String
+  status          OrderStatus @default(PENDING)
+  totalPrice      Float
+  deliveryAddress String
+  createdAt       DateTime    @default(now())
+  updatedAt       DateTime    @updatedAt
+
+  user        User @relation(fields: [userId], references: [id])
+  restaurant  Restaurant @relation(fields: [restaurantId], references: [id])
+  items       OrderItem[]
+}
+
+model OrderItem {
+  id        String @id @default(uuid())
+  orderId   String
+  platId    String
+  quantity  Int
+  unitPrice Float
+  subtotal  Float
+
+  order  Order @relation(fields: [orderId], references: [id])
+  plat   Plat  @relation(fields: [platId], references: [id])
 }
