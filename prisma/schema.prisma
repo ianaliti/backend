@@ -29,7 +29,7 @@ enum OrderStatus {
 model User {
   id           String    @id @default(uuid())
   email        String    @unique
-  name         String
+  name         String?
   password     String
   createdAt    DateTime  @default(now())
   updatedAt    DateTime  @updatedAt
@@ -42,7 +42,7 @@ model User {
 model Admin {
   id           String    @id @default(uuid())
   email        String    @unique
-  name         String
+  name         String?
   password     String
   createdAt    DateTime  @default(now())
   updatedAt    DateTime  @updatedAt

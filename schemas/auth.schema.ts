@@ -1,5 +1,11 @@
 import { Type, Static } from "@sinclair/typebox";
 
+export const RoleSchema = Type.Union([
+  Type.Literal("USER"),
+  Type.Literal("RESTAURANT"),
+  Type.Literal("ADMIN"),
+]);
+
 export const LoginSchema = Type.Object({
   email: Type.String({ format: "email" }),
   password: Type.String({ minLength: 2 }),
@@ -12,8 +18,8 @@ export const RegisterSchema = Type.Object({
 
 export const UserResponseSchema = Type.Object({
   id: Type.String(),
-  email: Type.String(),
-  role: Type.String(),
+  email: Type.String({ format: "email" }),
+  role: RoleSchema,
 });
 
 export const TokenResponseSchema = Type.Object({

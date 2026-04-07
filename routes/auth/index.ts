@@ -27,7 +27,7 @@ export const authRoutes = async (app: FastifyInstance) => {
     },
     async (request, reply) => {
       const user = await register(request.body);
-      const token = app.jwt.sign({ id: user.id });
+      const token = app.jwt.sign({ id: user.id, role: user.role });
       return reply.status(201).send({ token });
     },
   );
@@ -45,7 +45,7 @@ export const authRoutes = async (app: FastifyInstance) => {
     },
     async (request, reply) => {
       const user = await login(request.body);
-      const token = app.jwt.sign({ id: user.id });
+      const token = app.jwt.sign({ id: user.id, role: user.role });
       return reply.status(200).send({ token });
     },
   );
@@ -56,9 +56,10 @@ export const authRoutes = async (app: FastifyInstance) => {
       schema: {
         response: {
           200: Type.Unsafe<Omit<User, "password">>(),
+          401: ErrorResponseSchema,
         },
       },
-      onRequest: [app.authenticate], //la route necessite une authentification, le decorateur app.authenticate vérifie le token JWT et ajoute les infos de l'utilisateur à request.user
+      onRequest: [app.authenticate],
     },
     async (request, reply) => {
       return request.user;

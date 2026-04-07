@@ -1,6 +1,7 @@
 import "fastify";
 import { FastifyJwtNamespace } from "@fastify/jwt";
 import { FastifyReply, FastifyRequest } from "fastify";
+import { Role } from "../generated/prisma/client.js";
 
 declare module "fastify" {
   interface FastifyInstance extends FastifyJwtNamespace<{
@@ -10,7 +11,7 @@ declare module "fastify" {
   }> {
     authenticate: (req: FastifyRequest, res: FastifyReply) => Promise<void>;
     authorize: (
-      allowedRoles: string[],
+      allowedRoles: Role[],
     ) => (req: FastifyRequest, res: FastifyReply) => Promise<void>;
     prisma: PrismaClient;
   }
@@ -21,11 +22,11 @@ import { PrismaClient } from "../generated/prisma/client.js";
 
 declare module "@fastify/jwt" {
   interface FastifyJWT {
-    payload: { id: string };
+    payload: { id: string; role: Role };
     user: {
       id: string;
       email: string;
-      role: "USER";
+      role: Role;
     };
   }
 }
