@@ -58,16 +58,19 @@ export default class AuthService {
   };
 
   login = async (input: LoginInput): Promise<AuthResponse> => {
-    //1. recuperer l'utilisateur avec l'email en base de données
-    const user = await this.prisma.user.findUnique({
-      where: { email: input.email },
-    });
-    //2. si l'utilisateur n'existe pas, throw une erreur d'Unauthorized
-    if (!user) {
+    const [user, restaurant, admin] = await Promise.all([
+      this.prisma.user.findUnique({ where: { email: input.email } }),
+      this.prisma.restaurant.findUnique({ where: { email: input.email } }),
+      this.prisma.admin.findUnique({ where: { email: input.email } }),
+    ]);
+
+    const account = user ?? restaurant ?? admin;
+
+    if (!account) {
       throw new UnauthorizedError("Invalid credentials");
     }
     //3. comparer le mot de passe fourni avec le mot de passe hashé en base de données (utiliser la fonction compare de bcryptjs)
-    const isPasswordValid = await compare(input.password, user.password);
+    const isPasswordValid = await compare(input.password, account.password);
 
     //4. si les mots de passe ne correspondent pas, throw une erreur d'Unauthorized
     if (!isPasswordValid) {
@@ -75,9 +78,9 @@ export default class AuthService {
     }
 
     return {
-      id: user.id,
-      email: user.email,
-      role: user.role,
+      id: account.id,
+      email: account.email,
+      role: account.role,
     };
   };
 }
