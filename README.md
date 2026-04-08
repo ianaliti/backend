@@ -104,3 +104,31 @@ GET /api/users/me with Authorization: Bearer <userToken>
 PATCH /api/users/me Authorization: Bearer <userToken> { "name": "New name" }
 if use the other user email in the json; { "email": "user@example.com" } it returns 
 {"type":"urn:app:error:conflict","title":"Conflict","status":409,"detail":"Email already used","instance":"/api/users/me"}
+
+
+POST
+http://localhost:3000/api/auth/register
+{
+  "email": "not-an-email",
+  "password": "1"
+}
+
+{"type":"urn:app:error:validation","title":"Validation Error","status":400,"detail":"body/email must match format \"email\"","instance":"/api/auth/register"}
+
+{
+  "email": "email@gmail.com",
+  "password": "1"
+}
+
+{"type":"urn:app:error:validation","title":"Validation Error","status":400,"detail":"body/password must NOT have fewer than 2 characters","instance":"/api/auth/register"}
+
+GET /api/users/me with no token
+
+{"type":"urn:app:error:unauthorized","title":"Unauthorized","status":401,"detail":"Invalid Access Token","instance":"/api/users/me"}
+
+
+POST /api/dishes with user token
+{"type":"urn:app:error:forbidden","title":"Forbidden","status":403,"detail":"Access Forbidden","instance":"/api/dishes"}
+
+GET /api/dishes/id-kmfknlnfg
+{"type":"urn:app:error:not-found","title":"Not Found","status":404,"detail":"Dish not found","instance":"/api/dishes/jfnwokfn"}
