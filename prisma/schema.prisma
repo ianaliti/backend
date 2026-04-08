@@ -19,12 +19,13 @@ enum Role {
   RESTAURANT
 }
 
-enum OrderStatus { 
-    PENDING
-    CONFIRMED
-    SHIPPED 
-    DELIVERED 
-  }
+enum OrderStatus {
+  PENDING
+  CONFIRMED
+  PREPARING
+  READY
+  DELIVERED
+}
 
 model User {
   id           String    @id @default(uuid())

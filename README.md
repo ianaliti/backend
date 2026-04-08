@@ -25,7 +25,6 @@ http://localhost:3000/api/auth/login
     "password":"admin123"
 }
 
-{"token":"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjQyYzk0YjU3LTMyODItMTFmMS04NDhiLWE2ZWZjZDQzNjA0NyIsInJvbGUiOiJBRE1JTiIsImlhdCI6MTc3NTU2Nzk0MX0.Pj5vlxZNSVBmUrXgV2flFOmjgwc2_dJDhXsNj7_hXF0"}
 
 POST
 http://localhost:3000/api/restaurants
@@ -66,3 +65,36 @@ http://localhost:3000/api/dishes/50723968-78e7-496d-88f3-b78b19cf43a4
   "price": 13.9,
   "isAvailable": true
 }
+
+POST /api/orders
+{
+  "restaurantId": "<restaurantId>",
+  "deliveryAddress": "10 Rue de Paris",
+  "items": [
+    { "dishId": "<dish1>", "quantity": 2 },
+    { "dishId": "<dish2>", "quantity": 1 }
+  ]
+}
+
+
+POST http://localhost:3000/api/orders
+with user token
+{
+  "restaurantId": "1a1bc24f-738c-42a6-be04-18f9f079d86f",
+  "deliveryAddress": "10 Rue de Paris",
+  "items": [
+    { "dishId": "0c018e7b-b8ca-41af-8faa-5867b7b064e6", "quantity": 2 },
+    { "dishId": "50723968-78e7-496d-88f3-b78b19cf43a4", "quantity": 1 }
+  ]
+}
+
+GET /api/restaurants/me/orders with restaurantToken
+GET /api/orders/:id with user token (owner)
+PATCH /api/orders/:id/status with restaurantToken
+
+{ "status": "CONFIRMED" }
+{ "status": "PREPARING" }
+{ "status": "READY" }
+{ "status": "DELIVERED" }
+
+DELETE /api/orders/:id
