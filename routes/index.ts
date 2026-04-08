@@ -4,9 +4,12 @@ import { restaurantsRoutes } from "./restaurants/index.js";
 import { dishesRoutes } from "./dishes/index.js";
 import { ordersRoutes } from "./orders/index.js";
 import { usersMeRoutes } from "./users/me.js";
+import { websocketRoutes } from "./websocket.js";
 
 export const registerRoutes = async (app: FastifyInstance) => {
-// Routes API
+  await app.register(websocketRoutes);
+
+  // Routes API
   await app.register(
     async (fastify) => {
       await fastify.register(authRoutes, { prefix: "/auth" });

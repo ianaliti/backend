@@ -52,8 +52,9 @@ PATCH http://localhost:3000/api/restaurants/me with <tokenRestaurant> and with t
 
 login as a restarant
 POST /api/dishes with resto token
+Authorization: Bearer <token>
 
-GET /api/restaurants/<restaurantId>/dishes
+GET http://localhost:3000/api/restaurants/<restaurantId>/dishes
 http://localhost:3000/api/restaurants/1a1bc24f-738c-42a6-be04-18f9f079d86f/dishes
 
 GET

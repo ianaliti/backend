@@ -1,4 +1,14 @@
-import type { AuthenticatedWebSocket } from "../types/socket.js";
+import { WebSocket } from "@fastify/websocket";
+
+type AuthenticatedWebSocket = {
+  user: {
+    id: string;
+    email: string;
+    role: string;
+  };
+  restaurantId: string;
+  socket: WebSocket;
+};
 
 // Map pour stocker les connexions WebSocket par restaurantId
 const restaurantConnections = new Map<string, Set<AuthenticatedWebSocket>>();
@@ -15,7 +25,11 @@ export const registerRestaurantConnection = (
   restaurantId: string,
   socket: AuthenticatedWebSocket,
 ) => {
-  // À implémenter
+  if (!restaurantConnections.has(restaurantId)) {
+    restaurantConnections.set(restaurantId, new Set());
+  }
+
+  restaurantConnections.get(restaurantId)?.add(socket);
 };
 
 /**
@@ -30,7 +44,14 @@ export const unregisterRestaurantConnection = (
   restaurantId: string,
   socket: AuthenticatedWebSocket,
 ) => {
-  // À implémenter
+  const connections = restaurantConnections.get(restaurantId);
+  if (!connections) return;
+
+  connections.delete(socket);
+
+  if (connections.size === 0) {
+    restaurantConnections.delete(restaurantId);
+  }
 };
 
 /**
@@ -47,5 +68,22 @@ export const notifyRestaurant = (
   event: string,
   data: any,
 ) => {
-  // À implémenter
+  const connections = restaurantConnections.get(restaurantId);
+  if (!connections || connections.size === 0) return;
+
+  const message = JSON.stringify({
+    event,
+    data,
+    timestamp: new Date().toISOString(),
+  });
+
+  for (const connection of connections) {
+    try {
+      if (connection.socket.readyState === connection.socket.OPEN) {
+        connection.socket.send(message);
+      }
+    } catch (error) {
+      console.error("Error sending websocket notification:", error);
+    }
+  }
 };

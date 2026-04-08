@@ -4,6 +4,7 @@ import {
   ForbiddenError,
   NotFoundError,
 } from "../common/exceptions.js";
+import { notifyRestaurant } from "./websocket.service.js";
 import {
   CreateOrderRequest,
   StatusUpdateRequest,
@@ -141,6 +142,13 @@ export default class OrdersService {
         },
       },
       include: { items: true },
+    });
+
+    notifyRestaurant(order.restaurantId, "new-order", {
+      orderId: order.id,
+      totalPrice: order.totalPrice,
+      itemCount: order.items.reduce((acc, item) => acc + item.quantity, 0),
+      createdAt: order.createdAt.toISOString(),
     });
 
     return this.toOrderResponse(order);
