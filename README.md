@@ -46,9 +46,9 @@ http://localhost:3000/api/auth/login
 }
 
 GET 
-http://localhost:3000/api/restaurants/me with token restaurant
+http://localhost:3000/api/restaurants/me with <tokenRestaurant>
 
-PATCH http://localhost:3000/api/restaurants/me with token restaurant and with the token other user 
+PATCH http://localhost:3000/api/restaurants/me with <tokenRestaurant> and with the token other user 
 
 login as a restarant
 POST /api/dishes with resto token
@@ -78,7 +78,7 @@ POST /api/orders
 
 
 POST http://localhost:3000/api/orders
-with user token
+with <userToken>
 {
   "restaurantId": "1a1bc24f-738c-42a6-be04-18f9f079d86f",
   "deliveryAddress": "10 Rue de Paris",
@@ -88,8 +88,8 @@ with user token
   ]
 }
 
-GET /api/restaurants/me/orders with restaurantToken
-GET /api/orders/:id with user token (owner)
+GET /api/restaurants/me/orders with <tokenRestaurant>
+GET /api/orders/:id with <userToken> (owner)
 PATCH /api/orders/:id/status with restaurantToken
 
 { "status": "CONFIRMED" }
@@ -98,3 +98,9 @@ PATCH /api/orders/:id/status with restaurantToken
 { "status": "DELIVERED" }
 
 DELETE /api/orders/:id
+
+GET /api/users/me with Authorization: Bearer <userToken>
+
+PATCH /api/users/me Authorization: Bearer <userToken> { "name": "New name" }
+if use the other user email in the json; { "email": "user@example.com" } it returns 
+{"type":"urn:app:error:conflict","title":"Conflict","status":409,"detail":"Email already used","instance":"/api/users/me"}
