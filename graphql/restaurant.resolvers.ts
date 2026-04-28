@@ -13,7 +13,6 @@ export interface ResolverContext {
 }
 
 // 2. Function signature: takes app, returns resolvers
-// @ts-ignore - Type compatibility with Mercurius
 export const createRestaurantResolvers = (
   app: FastifyInstance,
 ): IResolvers => ({

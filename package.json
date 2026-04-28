@@ -17,7 +17,6 @@
   "license": "ISC",
   "devDependencies": {
     "@vitest/ui": "^2.1.4",
-    "prisma": "^7.4.2",
     "tsx": "^4.21.0",
     "typescript": "^5.9.3",
     "vitest": "^2.1.4",
@@ -26,6 +25,7 @@
   },
   "dependencies": {
     "@dotenvx/dotenvx": "^1.51.4",
+    "prisma": "^7.4.2",
     "@fastify/autoload": "^6.3.1",
     "@fastify/cors": "^11.2.0",
     "@fastify/jwt": "^10.0.0",

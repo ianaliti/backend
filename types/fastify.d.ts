@@ -1,7 +1,18 @@
 import "fastify";
 import { FastifyJwtNamespace } from "@fastify/jwt";
 import { FastifyReply, FastifyRequest } from "fastify";
-import { Role } from "../generated/prisma/client.js";
+import { Role, PrismaClient } from "../generated/prisma/client.js";
+
+declare module "mercurius" {
+  interface MercuriusContext {
+    prisma: PrismaClient;
+    user?: {
+      id: string;
+      role: string;
+      email: string;
+    };
+  }
+}
 
 declare module "fastify" {
   interface FastifyInstance extends FastifyJwtNamespace<{
