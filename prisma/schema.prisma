@@ -25,6 +25,7 @@ enum OrderStatus {
   PREPARING
   READY
   DELIVERED
+  CANCELLED
 }
 
 model User {

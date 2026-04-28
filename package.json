@@ -7,15 +7,22 @@
   "scripts": {
     "build": "tsc",
     "dev": "tsx watch index.ts",
-    "start": "node dist/index.js"
+    "start": "node dist/index.js",
+    "test": "vitest run",
+    "test:watch": "vitest watch",
+    "test:coverage": "vitest run --coverage"
   },
   "keywords": [],
   "author": "",
   "license": "ISC",
   "devDependencies": {
+    "@vitest/ui": "^2.1.4",
     "prisma": "^7.4.2",
     "tsx": "^4.21.0",
-    "typescript": "^5.9.3"
+    "typescript": "^5.9.3",
+    "vitest": "^2.1.4",
+    "vitest-mock-extended": "^2.0.0",
+    "@vitest/coverage-v8": "^2.1.4"
   },
   "dependencies": {
     "@dotenvx/dotenvx": "^1.51.4",
@@ -32,6 +39,7 @@
     "bcryptjs": "^3.0.3",
     "fastify": "^5.6.2",
     "fastify-type-provider-zod": "^6.1.0",
-    "mercurius": "^16.7.0"
+    "graphql": "^16.13.2",
+    "mercurius": "^16.9.0"
   }
 }
