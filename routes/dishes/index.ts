@@ -6,8 +6,10 @@ import {
   CreateDishSchema,
   DishIdParams,
   DishIdParamsSchema,
-  DishListResponseSchema,
+  DishPaginationQuery,
+  DishPaginationQuerySchema,
   DishResponseSchema,
+  PaginatedDishResponseSchema,
   RestaurantIdParams,
   RestaurantIdParamsSchema,
   UpdateDishRequest,
@@ -38,21 +40,25 @@ export const dishesRoutes = async (app: FastifyInstance) => {
     },
   );
 
-  app.get<{ Params: RestaurantIdParams }>(
+  app.get<{ Params: RestaurantIdParams; Querystring: DishPaginationQuery }>(
     "/restaurants/:restaurantId/dishes",
     {
       schema: {
         params: RestaurantIdParamsSchema,
+        querystring: DishPaginationQuerySchema,
         response: {
-          200: DishListResponseSchema,
+          200: PaginatedDishResponseSchema,
         },
       },
     },
     async (request, reply) => {
-      const dishes = await dishesService.getDishesByRestaurant(
+      const { limit = 20, offset = 0 } = request.query;
+      const result = await dishesService.getDishesByRestaurant(
         request.params.restaurantId,
+        limit,
+        offset,
       );
-      return reply.status(200).send(dishes);
+      return reply.status(200).send(result);
     },
   );
 

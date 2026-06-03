@@ -10,7 +10,7 @@ import {
   StatusUpdateRequest,
 } from "../schemas/orders.schema.js";
 
-type OrderStatus = "PENDING" | "CONFIRMED" | "PREPARING" | "READY" | "DELIVERED";
+type OrderStatus = "PENDING" | "CONFIRMED" | "PREPARING" | "READY" | "DELIVERED" | "CANCELLED";
 
 type OrderResponse = {
   id: string;
@@ -37,6 +37,7 @@ const statusTransitions: Record<OrderStatus, OrderStatus[]> = {
   PREPARING: ["READY"],
   READY: ["DELIVERED"],
   DELIVERED: [],
+  CANCELLED: [],
 };
 
 export default class OrdersService {
@@ -250,8 +251,9 @@ export default class OrdersService {
       throw new BadRequestError("Only pending orders can be cancelled");
     }
 
-    await this.prisma.order.delete({
+    await this.prisma.order.update({
       where: { id: orderId },
+      data: { status: "CANCELLED" },
     });
   };
 }

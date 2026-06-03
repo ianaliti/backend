@@ -77,13 +77,25 @@ export default class DishesService {
     return this.toDishResponse(dish);
   };
 
-  getDishesByRestaurant = async (restaurantId: string): Promise<DishResponse[]> => {
-    const dishes = await this.prisma.plat.findMany({
-      where: { restaurantId },
-      orderBy: { createdAt: "desc" },
-    });
+  getDishesByRestaurant = async (
+    restaurantId: string,
+    limit: number,
+    offset: number,
+  ): Promise<{ data: DishResponse[]; pagination: { total: number; limit: number; offset: number } }> => {
+    const [dishes, total] = await Promise.all([
+      this.prisma.plat.findMany({
+        where: { restaurantId },
+        orderBy: { createdAt: "desc" },
+        take: limit,
+        skip: offset,
+      }),
+      this.prisma.plat.count({ where: { restaurantId } }),
+    ]);
 
-    return dishes.map((dish) => this.toDishResponse(dish));
+    return {
+      data: dishes.map((dish) => this.toDishResponse(dish)),
+      pagination: { total, limit, offset },
+    };
   };
 
   getDishById = async (id: string): Promise<DishResponse> => {

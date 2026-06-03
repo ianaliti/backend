@@ -101,11 +101,34 @@ export default class RestaurantsService {
     return this.toRestaurantProfile(restaurant);
   };
 
-  getAllRestaurants = async (): Promise<RestaurantProfile[]> => {
-    const restaurants = await this.prisma.restaurant.findMany({
-      orderBy: { createdAt: "desc" },
+  getAllRestaurants = async (
+    limit: number,
+    offset: number,
+  ): Promise<{ data: RestaurantProfile[]; pagination: { total: number; limit: number; offset: number } }> => {
+    const [restaurants, total] = await Promise.all([
+      this.prisma.restaurant.findMany({
+        orderBy: { createdAt: "desc" },
+        take: limit,
+        skip: offset,
+      }),
+      this.prisma.restaurant.count(),
+    ]);
+    return {
+      data: restaurants.map((r) => this.toRestaurantProfile(r)),
+      pagination: { total, limit, offset },
+    };
+  };
+
+  getRestaurantById = async (restaurantId: string): Promise<RestaurantProfile> => {
+    const restaurant = await this.prisma.restaurant.findUnique({
+      where: { id: restaurantId },
     });
-    return restaurants.map((restaurant) => this.toRestaurantProfile(restaurant));
+
+    if (!restaurant) {
+      throw new NotFoundError("Restaurant not found");
+    }
+
+    return this.toRestaurantProfile(restaurant);
   };
 
   getMyRestaurant = async (restaurantId: string): Promise<RestaurantProfile> => {
@@ -118,6 +141,28 @@ export default class RestaurantsService {
     }
 
     return this.toRestaurantProfile(restaurant);
+  };
+
+  deleteRestaurant = async (restaurantId: string): Promise<void> => {
+    const restaurant = await this.prisma.restaurant.findUnique({
+      where: { id: restaurantId },
+    });
+
+    if (!restaurant) {
+      throw new NotFoundError("Restaurant not found");
+    }
+
+    const orders = await this.prisma.order.findMany({
+      where: { restaurantId },
+      select: { id: true },
+    });
+    const orderIds = orders.map((o) => o.id);
+
+    await this.prisma.orderItem.deleteMany({ where: { orderId: { in: orderIds } } });
+    await this.prisma.order.deleteMany({ where: { restaurantId } });
+    await this.prisma.rating.deleteMany({ where: { restaurantId } });
+    await this.prisma.plat.deleteMany({ where: { restaurantId } });
+    await this.prisma.restaurant.delete({ where: { id: restaurantId } });
   };
 
   updateRestaurant = async (

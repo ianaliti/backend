@@ -38,5 +38,20 @@ export const RestaurantResponseSchema = Type.Object({
 
 export const RestaurantListResponseSchema = Type.Array(RestaurantResponseSchema);
 
+export const PaginationQuerySchema = Type.Object({
+  limit: Type.Optional(Type.Integer({ minimum: 1, maximum: 100, default: 20 })),
+  offset: Type.Optional(Type.Integer({ minimum: 0, default: 0 })),
+});
+
+export const PaginatedRestaurantResponseSchema = Type.Object({
+  data: Type.Array(RestaurantResponseSchema),
+  pagination: Type.Object({
+    total: Type.Integer(),
+    limit: Type.Integer(),
+    offset: Type.Integer(),
+  }),
+});
+
 export type CreateRestaurantRequest = Static<typeof CreateRestaurantSchema>;
 export type UpdateRestaurantRequest = Static<typeof UpdateRestaurantSchema>;
+export type PaginationQuery = Static<typeof PaginationQuerySchema>;

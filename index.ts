@@ -2,6 +2,7 @@ import fastify, { FastifyError, FastifyReply, FastifyRequest } from "fastify";
 import cors from "@fastify/cors";
 import "./plugins/dotenvx.js";
 import swagger from "@fastify/swagger";
+import swaggerUi from "@fastify/swagger-ui";
 import { fileURLToPath } from "url";
 import { dirname } from "path";
 import { registerPlugins } from "./plugins/index.js";
@@ -35,12 +36,24 @@ server.setErrorHandler((error, request, reply) => {
   // Erreurs de validation Fastify
   const validationError = error as FastifyError;
   if (validationError.code === "FST_ERR_VALIDATION") {
+    const validationErrors = (error as any).validation ?? [];
+
+    const errors: Record<string, string[]> = {};
+    for (const err of validationErrors) {
+      const field = err.instancePath
+        ? err.instancePath.replace(/^\//, "")
+        : (err.params?.missingProperty ?? "root");
+      if (!errors[field]) errors[field] = [];
+      errors[field].push(err.message ?? "invalid");
+    }
+
     return reply.status(400).send({
       type: "urn:app:error:validation",
       title: "Validation Error",
       status: 400,
       detail: validationError.message,
       instance: request.url,
+      errors,
     });
   }
 
@@ -62,18 +75,36 @@ const start = async () => {
     const port = Number(process.env.PORT) || 3000;
     const host = "0.0.0.0";
 
-    await server.register(cors, {});
-    // Todo: Enregistrer Swagger uniquement en développement
-    // Todo: Register Swagger-ui uniquement en développement
+    await server.register(cors, {
+      origin: true,
+      methods: ["GET", "HEAD", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
+    });
+    if (process.env.NODE_ENV === "development") {
+      await server.register(swagger, {
+        openapi: {
+          info: {
+            title: "UberEats API",
+            description: "API documentation",
+            version: "1.0.0",
+          },
+        },
+        transform: ({ schema, url }) => {
+          if (url.startsWith("/graphql") || url.startsWith("/graphiql")) {
+            return { schema: { ...schema, hide: true }, url };
+          }
+          return { schema, url };
+        },
+      });
+      await server.register(swaggerUi, {
+        routePrefix: "/docs",
+      });
+    }
 
     await registerPlugins(server);
     await registerGraphQL(server);
     await registerRoutes(server);
 
     await server.ready();
-    if (process.env.NODE_ENV === "development") {
-      //server.swagger();
-    }
 
     await server.listen({ port, host });
     server.log.info(`Server running on http://${host}:${port}`);

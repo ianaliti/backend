@@ -40,7 +40,22 @@ export const DishResponseSchema = Type.Object({
 
 export const DishListResponseSchema = Type.Array(DishResponseSchema);
 
+export const DishPaginationQuerySchema = Type.Object({
+  limit: Type.Optional(Type.Integer({ minimum: 1, maximum: 100, default: 20 })),
+  offset: Type.Optional(Type.Integer({ minimum: 0, default: 0 })),
+});
+
+export const PaginatedDishResponseSchema = Type.Object({
+  data: Type.Array(DishResponseSchema),
+  pagination: Type.Object({
+    total: Type.Integer(),
+    limit: Type.Integer(),
+    offset: Type.Integer(),
+  }),
+});
+
 export type CreateDishRequest = Static<typeof CreateDishSchema>;
 export type UpdateDishRequest = Static<typeof UpdateDishSchema>;
 export type DishIdParams = Static<typeof DishIdParamsSchema>;
 export type RestaurantIdParams = Static<typeof RestaurantIdParamsSchema>;
+export type DishPaginationQuery = Static<typeof DishPaginationQuerySchema>;

@@ -85,3 +85,13 @@ export class ConflictError extends AppError {
     this.name = "ConflictError";
   }
 }
+
+/**
+ * Erreur 429 - Trop de requêtes
+ */
+export class TooManyRequestsError extends AppError {
+  constructor(message: string = "Too Many Requests") {
+    super(429, "Too Many Requests", message, "urn:app:error:too-many-requests");
+    this.name = "TooManyRequestsError";
+  }
+}
