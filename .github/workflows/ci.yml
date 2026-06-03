@@ -13,6 +13,9 @@ env:
 jobs:
   test-and-build:
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
 
     env:
       DB_PASSWORD: ci_test_password
