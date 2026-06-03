@@ -3,7 +3,7 @@
 import dotenvx from "@dotenvx/dotenvx";
 import { defineConfig, env } from "prisma/config";
 
-dotenvx.config();
+dotenvx.config({ override: false });
 
 export default defineConfig({
   schema: "prisma/schema.prisma",

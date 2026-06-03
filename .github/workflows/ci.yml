@@ -2,7 +2,7 @@ name: CI/CD Pipeline
 
 on:
   push:
-    branches: [main, master]
+    branches: [main, master, develop]
   pull_request:
     branches: [main]
 
@@ -14,11 +14,15 @@ jobs:
   test-and-build:
     runs-on: ubuntu-latest
 
+    env:
+      DB_PASSWORD: ci_test_password
+      DB_URL: mysql://root:ci_test_password@127.0.0.1:3306/uber_eats_test
+
     services:
       mariadb:
         image: mariadb:11.4
         env:
-          MARIADB_ROOT_PASSWORD: ${{ secrets.MARIADB_ROOT_PASSWORD }}
+          MARIADB_ROOT_PASSWORD: ci_test_password
           MARIADB_DATABASE: uber_eats_test
         options: >-
           --health-cmd="healthcheck.sh --connect --innodb_initialized"
@@ -40,7 +44,7 @@ jobs:
 
       - name: Wait for MariaDB to be ready
         run: |
-          until mysql -h 127.0.0.1 -u root -p${{ secrets.MARIADB_ROOT_PASSWORD }} -e "SELECT 1;" > /dev/null 2>&1; do
+          until mysql -h 127.0.0.1 -u root -pci_test_password -e "SELECT 1;" > /dev/null 2>&1; do
             echo "Waiting..."
             sleep 2
           done
@@ -51,17 +55,17 @@ jobs:
       - name: Generate Prisma Client
         run: npx prisma generate
         env:
-          DATABASE_URL: mysql://root:${{ secrets.MARIADB_ROOT_PASSWORD }}@127.0.0.1:3306/uber_eats_test
+          DATABASE_URL: ${{ env.DB_URL }}
 
       - name: Apply Prisma migrations
         run: npx prisma migrate deploy
         env:
-          DATABASE_URL: mysql://root:${{ secrets.MARIADB_ROOT_PASSWORD }}@127.0.0.1:3306/uber_eats_test
+          DATABASE_URL: ${{ env.DB_URL }}
 
       - name: Run tests
         run: npm test
         env:
-          DATABASE_URL: mysql://root:${{ secrets.MARIADB_ROOT_PASSWORD }}@127.0.0.1:3306/uber_eats_test
+          DATABASE_URL: ${{ env.DB_URL }}
           JWT_SECRET: ${{ secrets.JWT_SECRET }}
 
       - name: Log in to GHCR

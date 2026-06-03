@@ -1,5 +1,6 @@
 import fastify, { FastifyError, FastifyReply, FastifyRequest } from "fastify";
 import cors from "@fastify/cors";
+import rateLimit from "@fastify/rate-limit";
 import "./plugins/dotenvx.js";
 import swagger from "@fastify/swagger";
 import swaggerUi from "@fastify/swagger-ui";
@@ -79,26 +80,29 @@ const start = async () => {
       origin: true,
       methods: ["GET", "HEAD", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
     });
-    if (process.env.NODE_ENV === "development") {
-      await server.register(swagger, {
-        openapi: {
-          info: {
-            title: "UberEats API",
-            description: "API documentation",
-            version: "1.0.0",
-          },
+
+    await server.register(rateLimit, {
+      max: 100,
+      timeWindow: "1 minute",
+    });
+    await server.register(swagger, {
+      openapi: {
+        info: {
+          title: "UberEats API",
+          description: "API documentation",
+          version: "1.0.0",
         },
-        transform: ({ schema, url }) => {
-          if (url.startsWith("/graphql") || url.startsWith("/graphiql")) {
-            return { schema: { ...schema, hide: true }, url };
-          }
-          return { schema, url };
-        },
-      });
-      await server.register(swaggerUi, {
-        routePrefix: "/docs",
-      });
-    }
+      },
+      transform: ({ schema, url }) => {
+        if (url.startsWith("/graphql") || url.startsWith("/graphiql")) {
+          return { schema: { ...schema, hide: true }, url };
+        }
+        return { schema, url };
+      },
+    });
+    await server.register(swaggerUi, {
+      routePrefix: "/docs",
+    });
 
     await registerPlugins(server);
     await registerGraphQL(server);
