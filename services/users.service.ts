@@ -1,4 +1,5 @@
 import { PrismaClient, Role } from "../generated/prisma/client.js";
+import { hash } from "bcryptjs";
 import { BadRequestError, ConflictError, NotFoundError } from "../common/exceptions.js";
 import { UpdateUserRequest } from "../schemas/users.schema.js";
 
@@ -69,6 +70,7 @@ export default class UsersService {
     const data: Record<string, unknown> = {};
     if (input.email) data.email = input.email;
     if (input.name !== undefined) data.name = input.name;
+    if (input.password) data.password = await hash(input.password, 10);
 
     if (Object.keys(data).length === 0) {
       throw new BadRequestError("No updatable fields provided");
@@ -88,6 +90,15 @@ export default class UsersService {
       throw new NotFoundError("User not found");
     }
 
+    const orders = await this.prisma.order.findMany({
+      where: { userId },
+      select: { id: true },
+    });
+    const orderIds = orders.map((o) => o.id);
+
+    await this.prisma.orderItem.deleteMany({ where: { orderId: { in: orderIds } } });
+    await this.prisma.order.deleteMany({ where: { userId } });
+    await this.prisma.rating.deleteMany({ where: { userId } });
     await this.prisma.user.delete({ where: { id: userId } });
   };
 }

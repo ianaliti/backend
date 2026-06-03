@@ -149,6 +149,7 @@ export default class DishesService {
       throw new ForbiddenError("You can only delete your own dishes");
     }
 
+    await this.prisma.orderItem.deleteMany({ where: { platId: id } });
     await this.prisma.plat.delete({ where: { id } });
   };
 }

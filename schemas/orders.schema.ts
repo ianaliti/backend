@@ -43,6 +43,7 @@ export const OrderResponseSchema = Type.Object({
     Type.Literal("PREPARING"),
     Type.Literal("READY"),
     Type.Literal("DELIVERED"),
+    Type.Literal("CANCELLED"),
   ]),
   totalPrice: Type.Number(),
   deliveryAddress: Type.String(),

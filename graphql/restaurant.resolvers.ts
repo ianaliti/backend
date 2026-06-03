@@ -257,9 +257,8 @@ export const createRestaurantResolvers = (
         throw new Error("Unauthorized: You can only cancel your own orders");
       }
 
-      // Check if order can be cancelled (not already delivered)
-      if (order.status === "DELIVERED") {
-        throw new Error("Cannot cancel a delivered order");
+      if (order.status !== "PENDING") {
+        throw new Error("Only pending orders can be cancelled");
       }
 
       await prisma.order.update({
