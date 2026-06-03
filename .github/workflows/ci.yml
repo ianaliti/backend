@@ -18,13 +18,13 @@ jobs:
       packages: write
 
     env:
-      DB_URL: mysql://root:${{ secrets.MARIADB_ROOT_PASSWORD }}@127.0.0.1:3306/uber_eats_test
+      DB_URL: mysql://root:ci_password@127.0.0.1:3306/uber_eats_test
 
     services:
       mariadb:
         image: mariadb:11.4
         env:
-          MARIADB_ROOT_PASSWORD: ${{ secrets.MARIADB_ROOT_PASSWORD }}
+          MARIADB_ROOT_PASSWORD: ci_password
           MARIADB_DATABASE: uber_eats_test
         options: >-
           --health-cmd="healthcheck.sh --connect --innodb_initialized"
@@ -46,7 +46,7 @@ jobs:
 
       - name: Wait for MariaDB to be ready
         run: |
-          until mysql -h 127.0.0.1 -u root -p${{ secrets.MARIADB_ROOT_PASSWORD }} -e "SELECT 1;" > /dev/null 2>&1; do
+          until mysql -h 127.0.0.1 -u root -pci_password -e "SELECT 1;" > /dev/null 2>&1; do
             echo "Waiting..."
             sleep 2
           done
