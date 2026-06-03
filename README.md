@@ -2,54 +2,6 @@
 
 A REST + GraphQL + WebSocket backend for a food delivery platform, built with Fastify, Prisma, and MariaDB.
 
----
-
-## Stack
-
-| Layer | Technology |
-|---|---|
-| Runtime | Node.js (ESM) |
-| Framework | Fastify 5 |
-| ORM | Prisma 7 (MariaDB) |
-| Auth | JWT (`@fastify/jwt`) |
-| Validation | TypeBox + JSON Schema |
-| API Docs | Swagger (`/docs`) |
-| GraphQL | Mercurius |
-| Real-time | WebSocket (`@fastify/websocket`) |
-| Tests | Vitest |
-| Container | Docker |
-
----
-
-## Getting Started
-
-### With Docker
-
-```bash
-docker compose up
-```
-
-API runs at `http://localhost:3000`. Swagger UI at `http://localhost:3000/docs` (development only).
-
-### Local Development
-
-```bash
-npm install
-npx prisma generate
-npm run dev
-```
-
-Requires a `.env` file with:
-
-```env
-DATABASE_URL="mysql://user:password@localhost:3307/ubereats"
-JWT_SECRET="your-secret"
-PORT=3000
-NODE_ENV=development
-```
-
----
-
 ## Entry Point — `index.ts`
 
 The boot sequence is order-sensitive:
@@ -90,7 +42,7 @@ Fastify uses plugin encapsulation: each plugin runs in its own scope. `registerP
 User ──────┐
            ├──> Order ──> OrderItem ──> Plat
 Restaurant ┤                              │
-           └──> Rating                    │
+                                          │
                                           │
            Restaurant <────────────────── ┘
 ```
