@@ -135,3 +135,12 @@ model OrderItem {
   order  Order @relation(fields: [orderId], references: [id])
   plat   Plat  @relation(fields: [platId], references: [id])
 }
+
+model RefreshToken {
+  id        String   @id @default(uuid())
+  token     String   @unique
+  accountId String
+  role      Role
+  expiresAt DateTime
+  createdAt DateTime @default(now())
+}

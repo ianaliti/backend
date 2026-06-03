@@ -24,6 +24,11 @@ export const UserResponseSchema = Type.Object({
 
 export const TokenResponseSchema = Type.Object({
   token: Type.String(),
+  refreshToken: Type.String(),
+});
+
+export const RefreshRequestSchema = Type.Object({
+  refreshToken: Type.String(),
 });
 
 export const ErrorResponseSchema = Type.Object({
@@ -37,3 +42,4 @@ export type LoginRequest = Static<typeof LoginSchema>;
 export type RegisterRequest = Static<typeof RegisterSchema>;
 export type UserResponse = Static<typeof UserResponseSchema>;
 export type TokenResponse = Static<typeof TokenResponseSchema>;
+export type RefreshRequest = Static<typeof RefreshRequestSchema>;

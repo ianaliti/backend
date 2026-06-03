@@ -5,8 +5,10 @@ import {
   LoginSchema,
   RegisterSchema,
   TokenResponseSchema,
+  RefreshRequestSchema,
   type LoginRequest,
   type RegisterRequest,
+  type RefreshRequest,
 } from "../../schemas/auth.schema.js";
 import { ErrorResponseSchema } from "../../schemas/error.schema.js";
 import { TooManyRequestsError } from "../../common/exceptions.js";
@@ -60,8 +62,9 @@ export const authRoutes = async (app: FastifyInstance) => {
     },
     async (request, reply) => {
       const user = await register(request.body);
-      const token = app.jwt.sign({ id: user.id, role: user.role }, { expiresIn: "7d" });
-      return reply.status(201).send({ token });
+      const token = app.jwt.sign({ id: user.id, role: user.role }, { expiresIn: "15m" });
+      const refreshToken = await authService.createRefreshToken(user.id, user.role);
+      return reply.status(201).send({ token, refreshToken });
     },
   );
 
@@ -110,8 +113,9 @@ export const authRoutes = async (app: FastifyInstance) => {
         const user  = await login(request.body)
         // Success → clear the tracker for this IP
         loginAttempts.delete(ip)
-        const token = app.jwt.sign({ id: user.id, role: user.role }, { expiresIn: "7d" })
-        return reply.status(200).send({ token })
+        const token = app.jwt.sign({ id: user.id, role: user.role }, { expiresIn: "15m" })
+        const refreshToken = await authService.createRefreshToken(user.id, user.role)
+        return reply.status(200).send({ token, refreshToken })
       } catch (err) {
         record.failures++
 
@@ -127,6 +131,42 @@ export const authRoutes = async (app: FastifyInstance) => {
         loginAttempts.set(ip, record)
         throw err
       }
+    },
+  );
+
+  app.post<{ Body: RefreshRequest }>(
+    "/refresh",
+    {
+      schema: {
+        body: RefreshRequestSchema,
+        response: {
+          200: TokenResponseSchema,
+          401: ErrorResponseSchema,
+        },
+      },
+    },
+    async (request, reply) => {
+      const { accountId, role } = await authService.refresh(request.body.refreshToken);
+      const token = app.jwt.sign({ id: accountId, role }, { expiresIn: "15m" });
+      const refreshToken = await authService.createRefreshToken(accountId, role);
+      return reply.status(200).send({ token, refreshToken });
+    },
+  );
+
+  app.post<{ Body: RefreshRequest }>(
+    "/logout",
+    {
+      schema: {
+        body: RefreshRequestSchema,
+        response: {
+          204: Type.Null(),
+          401: ErrorResponseSchema,
+        },
+      },
+    },
+    async (request, reply) => {
+      await authService.revokeRefreshToken(request.body.refreshToken);
+      return reply.status(204).send();
     },
   );
 

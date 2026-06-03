@@ -1,5 +1,6 @@
 import type { PrismaClient } from "../generated/prisma/client.js";
 import { hash, compare } from "bcryptjs";
+import { randomBytes } from "crypto";
 import { ConflictError, UnauthorizedError } from "../common/exceptions.js";
 import { Role } from "../generated/prisma/client.js";
 
@@ -55,6 +56,27 @@ export default class AuthService {
       email: newUser.email,
       role: newUser.role,
     };
+  };
+
+  createRefreshToken = async (accountId: string, role: Role): Promise<string> => {
+    const token = randomBytes(64).toString("hex");
+    const expiresAt = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000);
+    await this.prisma.refreshToken.create({ data: { token, accountId, role, expiresAt } });
+    return token;
+  };
+
+  refresh = async (refreshToken: string): Promise<{ accountId: string; role: Role }> => {
+    const record = await this.prisma.refreshToken.findUnique({ where: { token: refreshToken } });
+    if (!record || record.expiresAt < new Date()) {
+      if (record) await this.prisma.refreshToken.delete({ where: { token: refreshToken } });
+      throw new UnauthorizedError("Invalid or expired refresh token");
+    }
+    await this.prisma.refreshToken.delete({ where: { token: refreshToken } });
+    return { accountId: record.accountId, role: record.role };
+  };
+
+  revokeRefreshToken = async (refreshToken: string): Promise<void> => {
+    await this.prisma.refreshToken.deleteMany({ where: { token: refreshToken } });
   };
 
   login = async (input: LoginInput): Promise<AuthResponse> => {

@@ -37,11 +37,14 @@ describe("Authentication Integration Tests", () => {
       // ASSERT : Vérifier le status HTTP
       expect(response.statusCode).toBe(201); // 201 = Created
       expect(response.json()).toHaveProperty("token");
+      expect(response.json()).toHaveProperty("refreshToken");
 
      // Vérifier que le token est valide
-      const token = response.json().token;
+      const { token, refreshToken } = response.json();
       expect(token).toBeTruthy();
       expect(typeof token).toBe("string");
+      expect(refreshToken).toBeTruthy();
+      expect(typeof refreshToken).toBe("string");
 
 
     // Vérifier que l'utilisateur est réellement dans la base de données
@@ -148,6 +151,9 @@ describe("Authentication Integration Tests", () => {
       expect(json).toHaveProperty("token");
       expect(typeof json.token).toBe("string");
       expect(json.token.length).toBeGreaterThan(0);
+      expect(json).toHaveProperty("refreshToken");
+      expect(typeof json.refreshToken).toBe("string");
+      expect(json.refreshToken.length).toBeGreaterThan(0);
     });
     
     it("should return 401 for a non-existent user", async () => {
@@ -166,6 +172,86 @@ describe("Authentication Integration Tests", () => {
 
       // ASSERT : Status 401 (Unauthorized)
       expect(response.statusCode).toBe(401);
+    });
+  });
+
+  describe("POST /auth/refresh", () => {
+    it("should return a new token pair given a valid refresh token", async () => {
+      const loginRes = await server.inject({
+        method: "POST",
+        url: "/api/auth/register",
+        payload: { email: "refresh@example.com", password: "password123" },
+      });
+      const { refreshToken } = loginRes.json();
+
+      const res = await server.inject({
+        method: "POST",
+        url: "/api/auth/refresh",
+        payload: { refreshToken },
+      });
+
+      expect(res.statusCode).toBe(200);
+      expect(res.json()).toHaveProperty("token");
+      expect(res.json()).toHaveProperty("refreshToken");
+      expect(res.json().refreshToken).not.toBe(refreshToken); // rotated
+    });
+
+    it("should return 401 for an invalid refresh token", async () => {
+      const res = await server.inject({
+        method: "POST",
+        url: "/api/auth/refresh",
+        payload: { refreshToken: "invalid-token" },
+      });
+
+      expect(res.statusCode).toBe(401);
+    });
+
+    it("should reject reuse of a consumed refresh token", async () => {
+      const loginRes = await server.inject({
+        method: "POST",
+        url: "/api/auth/register",
+        payload: { email: "reuse@example.com", password: "password123" },
+      });
+      const { refreshToken } = loginRes.json();
+
+      await server.inject({
+        method: "POST",
+        url: "/api/auth/refresh",
+        payload: { refreshToken },
+      });
+
+      const reuse = await server.inject({
+        method: "POST",
+        url: "/api/auth/refresh",
+        payload: { refreshToken },
+      });
+
+      expect(reuse.statusCode).toBe(401);
+    });
+  });
+
+  describe("POST /auth/logout", () => {
+    it("should revoke the refresh token so it can no longer be used", async () => {
+      const loginRes = await server.inject({
+        method: "POST",
+        url: "/api/auth/register",
+        payload: { email: "logout@example.com", password: "password123" },
+      });
+      const { refreshToken } = loginRes.json();
+
+      const logoutRes = await server.inject({
+        method: "POST",
+        url: "/api/auth/logout",
+        payload: { refreshToken },
+      });
+      expect(logoutRes.statusCode).toBe(204);
+
+      const refreshRes = await server.inject({
+        method: "POST",
+        url: "/api/auth/refresh",
+        payload: { refreshToken },
+      });
+      expect(refreshRes.statusCode).toBe(401);
     });
   });
 });
