@@ -116,6 +116,7 @@ export const websocketRoutes = async (app: FastifyInstance) => {
             }),
           );
         } catch (error) {
+          console.error("[WS auth error]", error);
           closeAuthError("Token invalide");
         }
       });

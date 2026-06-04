@@ -85,24 +85,26 @@ const start = async () => {
       max: 100,
       timeWindow: "1 minute",
     });
-    await server.register(swagger, {
-      openapi: {
-        info: {
-          title: "UberEats API",
-          description: "API documentation",
-          version: "1.0.0",
+    if (process.env.NODE_ENV === "development") {
+      await server.register(swagger, {
+        openapi: {
+          info: {
+            title: "UberEats API",
+            description: "API documentation",
+            version: "1.0.0",
+          },
         },
-      },
-      transform: ({ schema, url }) => {
-        if (url.startsWith("/graphql") || url.startsWith("/graphiql")) {
-          return { schema: { ...schema, hide: true }, url };
-        }
-        return { schema, url };
-      },
-    });
-    await server.register(swaggerUi, {
-      routePrefix: "/docs",
-    });
+        transform: ({ schema, url }) => {
+          if (url.startsWith("/graphql") || url.startsWith("/graphiql")) {
+            return { schema: { ...schema, hide: true }, url };
+          }
+          return { schema, url };
+        },
+      });
+      await server.register(swaggerUi, {
+        routePrefix: "/docs",
+      });
+    }
 
     await registerPlugins(server);
     await registerGraphQL(server);

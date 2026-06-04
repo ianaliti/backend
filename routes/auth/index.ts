@@ -43,7 +43,6 @@ setInterval(() => {
 function getClientIp(req: FastifyRequest): string {
   return (req.headers["x-forwarded-for"] as string)?.split(",")[0]?.trim() ?? req.ip ?? "unknown"
 }
-// ─────────────────────────────────────────────────────────────────────────────
 
 export const authRoutes = async (app: FastifyInstance) => {
   const authService = new AuthService(app.prisma);
